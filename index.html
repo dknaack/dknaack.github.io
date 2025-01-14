@@ -162,15 +162,17 @@ h2, h3, h4 {
     </table>
   </div>
 
-  <div class="row">
+  <form id="brute-force-form" class="row">
     <h2 style="padding-right: 1rem; align-self: center;">Brute-Force</h2>
-    <button id="brute-force-start">
+    <input type="number" name="denom1" value='20' />
+    <input type="number" name="denom2" value='20' />
+    <button type="submit">
       Start
     </button>
     <button id="brute-force-stop">
       Stop
     </button>
-  </div>
+  </form>
 
   <div id="brute-force">
     <table id="search-results">

@@ -60,12 +60,14 @@ document.getElementById('search-form').addEventListener('submit', (e) => {
 let worker = null;
 let bestInput = {};
 
-document.getElementById('brute-force-start').addEventListener('click', (e) => {
+document.getElementById('brute-force-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+
   if (worker === null) {
     worker = new Worker('/brute-force.js');
 
-    const numRows = 50;
-    const numCols = 50;
+    const numRows = e.target.denom1.value;
+    const numCols = e.target.denom2.value;
     const table = document.getElementById('search-results');
     table.innerHTML = '';
 
