@@ -1,5 +1,5 @@
-importScripts('rational.js');
-importScripts('euclid.js');
+importScripts('./rational.js');
+importScripts('./euclid.js');
 
 onmessage = (e) => {
   let chains = {};

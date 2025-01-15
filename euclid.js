@@ -8,7 +8,7 @@ function selectPivot(xs) {
       continue;
     }
 
-    if (l === null || xs[l].frac().lt(f)) {
+    if (l === null || f.lt(xs[l].frac())) {
       l = i;
     }
   }

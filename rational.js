@@ -67,7 +67,7 @@ class Rational {
   }
 
   lt(other) {
-    return other.gt(this);
+    return this.num * other.denom < other.num * this.denom;
   }
 
   geq(other) {
@@ -75,7 +75,7 @@ class Rational {
   }
 
   leq(other) {
-    return other.geq(this);
+    return this.num * other.denom <= other.num * this.denom;
   }
 
   equals(other) {
@@ -109,6 +109,10 @@ class Rational {
     } else {
       return `<span class="fraction"><sup>${this.num}</sup>&frasl;<sub>${this.denom}</sub></span>`;
     }
+  }
+
+  toFloat() {
+    return this.num / this.denom;
   }
 }
 
