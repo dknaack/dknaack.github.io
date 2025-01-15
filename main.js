@@ -29,7 +29,7 @@ document.getElementById('search-form').addEventListener('submit', (e) => {
 
   const header = table.createTHead();
   const tr = header.insertRow();
-  for (let j = 0; j <= result[0].values.length + 1; j++) {
+  for (let j = 0; j <= result[0].values.length; j++) {
     const td = tr.insertCell();
     if (j == 0) {
       td.innerHTML = 'n';
@@ -54,8 +54,6 @@ document.getElementById('search-form').addEventListener('submit', (e) => {
 
       td.innerHTML = result[i].values[j].toHTML() + ' = ' + Math.round(result[i].values[j].toFloat() * 100) / 100;
     }
-
-    tr.insertCell();
   }
 
   resultDiv.replaceChildren(table);
@@ -85,7 +83,6 @@ document.getElementById('brute-force-form').addEventListener('submit', (e) => {
     const td = tr.insertCell();
     td.textContent = j.toString();
   }
-  tr.insertCell();
 
   const cells = Array(numRows);
   const tbody = table.createTBody();
@@ -97,7 +94,6 @@ document.getElementById('brute-force-form').addEventListener('submit', (e) => {
     for (let j = 0; j < numCols - 2; j++) {
       cells[i][j] = tr.insertCell();
     }
-    tr.insertCell();
   }
 
   const info = document.getElementById('new-chain-info');
