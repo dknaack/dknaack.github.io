@@ -51,6 +51,25 @@ function update(xs) {
   return result;
 }
 
+function* fareySequence(n) {
+  let a = 0, b = 1, c = 1, d = n;
+
+  yield new Rational(a, b);
+
+  while (c <= n) {
+    yield new Rational(c, d);
+
+    let k = Math.floor((n + b) / d);
+    let nextC = k * c - a;
+    let nextD = k * d - b;
+
+    a = c;
+    b = d;
+    c = nextC;
+    d = nextD;
+  }
+}
+
 function backtrack(xs, mem) {
   const key = xs.toString();
   if (key in mem) {

@@ -60,97 +60,78 @@ document.getElementById('search-form').addEventListener('submit', (e) => {
 });
 
 let worker = null;
-
 document.getElementById('brute-force-form').addEventListener('submit', (e) => {
   e.preventDefault();
-
   if (worker !== null) {
     return;
   }
-  let bestInput = {};
-  worker = new Worker('./brute-force.js');
-
-  const numRows = e.target.denom1.value;
-  const numCols = e.target.denom2.value;
 
   const table = document.getElementById('search-results');
   table.innerHTML = '';
 
-  const thead = table.createTHead();
-  const tr = thead.insertRow();
-  tr.insertCell();
-  for (let j = 2; j < numCols; j++) {
-    const td = tr.insertCell();
-    td.textContent = j.toString();
-  }
-
-  const cells = Array(numRows);
+  const maxSteps = {};
+  const thead = table.createTHead().insertRow();
   const tbody = table.createTBody();
-  for (let i = 0; i < numRows - 2; i++) {
-    const tr = tbody.insertRow();
-    cells[i] = Array(numCols);
-
-    tr.insertCell().textContent = (i + 2).toString();
-    for (let j = 0; j < numCols - 2; j++) {
-      cells[i][j] = tr.insertCell();
-    }
-  }
-
   const info = document.getElementById('new-chain-info');
+  thead.appendChild(document.createElement('th')); // First cell is empty (diagonal)
+
+  worker = new Worker('./brute-force.js');
   worker.onmessage = (e) => {
     if (!e.data) {
       info.innerHTML = "";
-      for (const cost in bestInput) {
-        const inputs = bestInput[cost];
-        for (const [a, b] of inputs.slice(0, 2)) {
-          info.innerHTML += `${cost}: ${a.num}/${a.denom}, ${b.num}/${b.denom}, `;
-        }
-      }
-
+      console.log(maxSteps);
       return;
     }
 
-    const chain = e.data;
-    info.innerHTML = chain.map(values => {
-      let valueStrings = values.map(x => Rational.prototype.toString.call(x));
-      return '(' + valueStrings.join(', ') + ')';
-    }).join(' &rarr; ');
-
-    let isOptimal = false;
-    let otherInputs = [];
-
-    const input = chain[0];
-    const inputCost = cost(input);
+    const {x, y, chain} = e.data;
     const numSteps = chain.length;
-    if (numSteps in bestInput) {
-      otherInputs = bestInput[numSteps];
-      const otherCost = cost(otherInputs[0]);
-      const inputCost = cost(input);
-      if (inputCost < otherCost) {
-        bestInput[numSteps] = [input];
-        isOptimal = true;
-      } else if (inputCost == otherCost) {
-        bestInput[numSteps].push(input);
-        isOptimal = true;
-      }
-    } else {
-      bestInput[numSteps] = [input];
+    const input = [
+      Object.setPrototypeOf(chain[0][0], Rational.prototype),
+      Object.setPrototypeOf(chain[0][1], Rational.prototype),
+    ];
+
+    const inputCost = cost(input);
+    let isOptimal = false;
+    if (!(inputCost in maxSteps) || maxSteps[inputCost] < numSteps) {
+      maxSteps[inputCost] = numSteps;
       isOptimal = true;
     }
 
-    if (isOptimal) {
-      for (const input of otherInputs) {
-        const cell = cells[input[0].denom - 2][input[1].denom - 2];
-        cell.classList.remove('optimal');
-      }
-
-      const cell = cells[input[0].denom - 2][input[1].denom - 2];
-      cell.textContent = `${input[0].num}/${input[0].denom}, ${input[1].num}/${input[1].denom}`;
-      cell.classList.add('optimal');
+    // insert enough rows in the table
+    while (y >= tbody.rows.length) {
+      tbody.insertRow();
     }
+
+    // insert enough cells in the header
+    while (x + 1 >= thead.cells.length) {
+      const th = document.createElement('th');
+      th.scope = 'col';
+      thead.appendChild(th);
+    }
+
+    // insert the column header
+    thead.cells[1 + x].innerHTML = input[1].toHTML();
+
+    // insert the row header
+    const row = tbody.rows[y];
+    if (row.cells.length == 0) {
+      const th = document.createElement('th');
+      th.innerHTML = input[0].toHTML();
+      th.scope = 'row';
+      row.insertBefore(th, row.firstChild);
+    }
+
+    // insert enough cells in the current row
+    while (x + 1 >= row.cells.length) {
+      row.insertCell();
+    }
+
+    row.cells[1 + x].textContent = numSteps;
   };
 
-  worker.postMessage([numRows, numCols]);
+  const n = Math.floor(e.target.denom.value);
+  console.log(n);
+  worker.postMessage(n);
 });
 
 document.getElementById('brute-force-stop').addEventListener('click', (e) => {

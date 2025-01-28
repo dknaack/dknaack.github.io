@@ -54,20 +54,11 @@ button:focus {
 
 table {
   border-collapse: collapse;
-  border: 1px solid gray;
   width: 100%;
 }
 
 table td {
   padding: 0.5rem 1rem;
-}
-
-table tr td:last-child {
-  border-left: 1px solid black;
-}
-
-table td:nth-child(1) {
-  border-right: 1px solid black;
 }
 
 tbody tr:nth-child(odd) {
@@ -78,8 +69,35 @@ table .pivot .fraction {
   background: yellow;
 }
 
-thead {
-  border-bottom: 1px solid black;
+th, td {
+  text-align: center;
+  background: white;
+}
+
+td {
+  border: 1px solid #ddd;
+}
+
+thead th:first-child {
+    z-index: 3;
+}
+
+thead th {
+  outline: 1px solid #ddd;
+  position: sticky;
+  top: 0;
+}
+
+tbody th {
+  outline: 1px solid #ddd;
+  position: sticky;
+  left: 0;
+}
+
+thead th:first-child {
+    z-index: 3;
+    left: 0;
+    top: 0;
 }
 
 .fraction {
@@ -98,6 +116,7 @@ h2, h3, h4 {
 #brute-force {
   overflow: scroll;
   max-height: 60vh;
+  margin-bottom: 5em;
 }
 
 .optimal {
@@ -158,8 +177,7 @@ h2, h3, h4 {
 
   <form id="brute-force-form" class="row">
     <h2 style="padding-right: 1rem; align-self: center;">Brute-Force</h2>
-    <input type="number" name="denom1" value='20' />
-    <input type="number" name="denom2" value='20' />
+    <input type="number" name="denom" value='20' />
     <button type="submit">
       Start
     </button>
