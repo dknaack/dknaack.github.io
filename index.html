@@ -79,18 +79,20 @@ td {
 }
 
 thead th:first-child {
-    z-index: 3;
+  z-index: 3;
 }
 
 thead th {
   outline: 1px solid #ddd;
   position: sticky;
+  z-index: 2;
   top: 0;
 }
 
 tbody th {
   outline: 1px solid #ddd;
   position: sticky;
+  z-index: 2;
   left: 0;
 }
 
@@ -117,10 +119,18 @@ h2, h3, h4 {
   overflow: scroll;
   max-height: 60vh;
   margin-bottom: 5em;
+  position: relative;
 }
 
 .optimal {
   background: green;
+}
+
+canvas.arrow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
 }
   </style>
 </head>
@@ -187,7 +197,14 @@ h2, h3, h4 {
   </form>
 
   <div id="brute-force">
+    <canvas class="arrow" id="arrow0" width="0" height="0"> </canvas>
+    <canvas class="arrow" id="arrow1" width="0" height="0"> </canvas>
     <table id="search-results">
+      <thead>
+        <tr> </tr>
+      </thead>
+      <tbody>
+      </tbody>
     </table>
     <div id="new-chain-info">
 
