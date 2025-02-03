@@ -30,7 +30,7 @@ function pivot(xs, l) {
     if (i == l) {
       ys[i] = xs[i].inv().frac();
     } else {
-      ys[i] = xs[i].neg().div(xs[l]).frac();
+      ys[i] = xs[i].div(xs[l]).frac();
     }
   }
 
