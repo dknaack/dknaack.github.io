@@ -59,6 +59,7 @@ document.getElementById('search-form').addEventListener('submit', (e) => {
   resultDiv.replaceChildren(table);
 });
 
+let prev = {};
 let worker = null;
 document.getElementById('brute-force-form').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -67,15 +68,21 @@ document.getElementById('brute-force-form').addEventListener('submit', (e) => {
   }
 
   const table = document.getElementById('search-results');
-  table.innerHTML = '';
 
+  const inputTable = {};
   const maxSteps = {};
-  const thead = table.createTHead().insertRow();
-  const tbody = table.createTBody();
+  const thead = table.tHead.rows[0];
+  const tbody = table.tBodies[0];
   const info = document.getElementById('new-chain-info');
-  thead.appendChild(document.createElement('th')); // First cell is empty (diagonal)
 
-  worker = new Worker('./brute-force.js');
+  // Reset table
+  thead.innerHTML = '';
+  thead.appendChild(document.createElement('th')); // First cell is empty (diagonal)
+  while (tbody.rows.length > 0) {
+    tbody.deleteRow(-1);
+  }
+
+  worker = new Worker('./worker.js');
   worker.onmessage = (e) => {
     if (!e.data) {
       info.innerHTML = "";
@@ -83,19 +90,19 @@ document.getElementById('brute-force-form').addEventListener('submit', (e) => {
       return;
     }
 
-    const {x, y, chain} = e.data;
-    const numSteps = chain.length;
-    const input = [
-      Object.setPrototypeOf(chain[0][0], Rational.prototype),
-      Object.setPrototypeOf(chain[0][1], Rational.prototype),
-    ];
+    const {x, y, input, numSteps} = e.data;
+    input[0] = Object.setPrototypeOf(input[0], Rational.prototype);
+    input[1] = Object.setPrototypeOf(input[1], Rational.prototype);
+    inputTable[input.toString()] = { numSteps, x, y, };
 
+    // Check if input is worst-case for the number of steps
     const inputCost = cost(input);
     let isOptimal = false;
     if (!(inputCost in maxSteps) || maxSteps[inputCost] < numSteps) {
       maxSteps[inputCost] = numSteps;
       isOptimal = true;
     }
+
 
     // insert enough rows in the table
     while (y >= tbody.rows.length) {
@@ -126,11 +133,97 @@ document.getElementById('brute-force-form').addEventListener('submit', (e) => {
       row.insertCell();
     }
 
-    row.cells[1 + x].textContent = numSteps;
+    const cell = row.cells[1 + x];
+    cell.textContent = numSteps;
+
+    // Get inputs after pivoting
+    const prev = new Set();
+    for (let i = 0; i < 2; i++) {
+      if (!(input[i].isZero())) {
+        prev.add(pivot(input, i));
+      }
+    }
+
+    cell.addEventListener('click', (event) => {
+      const arrows = [
+        document.getElementById('arrow0'),
+        document.getElementById('arrow1'),
+      ];
+
+      const entries = prev.entries();
+      for (let i = 0; i < 2; i++) {
+        arrows[i].style.opacity = 0;
+      }
+
+      let i = 0;
+      for (const value of prev) {
+        if (!(value in inputTable)) {
+          continue;
+        }
+
+        const {x: prevX, y: prevY, numSteps: prevSteps} = inputTable[value];
+        const prevCell = tbody.rows[1 + prevY].cells[1 + prevX];
+        const prevRect = {
+          min: {
+            x: prevCell.offsetLeft,
+            y: prevCell.offsetTop,
+          },
+          max: {
+            x: prevCell.offsetLeft + prevCell.offsetWidth,
+            y: prevCell.offsetTop + prevCell.offsetHeight,
+          }
+        };
+
+        const prevPos = {
+          x: 0.5 * (prevRect.min.x + prevRect.max.x),
+          y: 0.5 * (prevRect.min.y + prevRect.max.y),
+        };
+
+        const inputRect = {
+          min: {
+            x: cell.offsetLeft,
+            y: cell.offsetTop,
+          },
+          max: {
+            x: cell.offsetLeft + cell.offsetWidth,
+            y: cell.offsetTop + cell.offsetHeight,
+          },
+        };
+
+        const inputPos = {
+          x: 0.5 * (inputRect.min.x + inputRect.max.x),
+          y: 0.5 * (inputRect.min.y + inputRect.max.y),
+        };
+
+        const minX = Math.min(inputRect.min.x, prevRect.min.x);
+        const minY = Math.min(inputRect.min.y, prevRect.min.y);
+        const maxX = Math.max(inputRect.max.x, prevRect.max.x);
+        const maxY = Math.max(inputRect.max.y, prevRect.max.y);
+
+        arrows[i].style.opacity = '1';
+        arrows[i].style.left = minX + 'px';
+        arrows[i].style.top = minY + 'px';
+        arrows[i].width = maxX - minX;
+        arrows[i].height = maxY - minY;
+
+        console.log(minX, minY, maxX, maxY);
+
+        const ctx = arrows[i].getContext('2d');
+        ctx.lineWidth = 15;
+        ctx.strokeStyle = 'white';
+        ctx.beginPath();
+        ctx.moveTo(inputPos.x - minX, inputPos.y - minY);
+        ctx.lineTo(prevPos.x - minX, prevPos.y - minY);
+        ctx.stroke();
+        ctx.clearRect(inputRect.min.x - minX, inputRect.min.y - minY, cell.offsetWidth, cell.offsetHeight);
+        ctx.clearRect(prevRect.min.x - minX, prevRect.min.y - minY, prevCell.offsetWidth, prevCell.offsetHeight);
+
+        i++;
+      }
+    });
   };
 
   const n = Math.floor(e.target.denom.value);
-  console.log(n);
   worker.postMessage(n);
 });
 
