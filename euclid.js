@@ -69,16 +69,3 @@ function* fareySequence(n) {
     d = nextD;
   }
 }
-
-function backtrack(xs, mem) {
-  const key = xs.toString();
-  if (key in mem) {
-    return mem[xs];
-  } else {
-    mem[key] = [];
-    const ys = pivot(xs);
-    const chain = backtrack(ys, mem);
-    return mem[key] = [xs, ...chain];
-  }
-}
-
